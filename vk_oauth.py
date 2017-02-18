@@ -6,9 +6,9 @@ class OAuthVk(web.RequestHandler):
 
     _ACCESS_TOKEN_URL = 'https://oauth.vk.com/access_token'
     _AUTHORIZE_URL = 'https://oauth.vk.com/authorize'
-    _APP_ID_ = '5799473'
-    _REDIRECT_URL_ = 'http://localhost:8888/oauth_vk'
-    _CLIENT_SECRET_ = 'ePxhl0tDNmV1t5EuveeJ'
+    _APP_ID_ = ''
+    _REDIRECT_URL_ = ''
+    _CLIENT_SECRET_ = ''
 
     def __init__(self, *args):
         super().__init__(*args)
