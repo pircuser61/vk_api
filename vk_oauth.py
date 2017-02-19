@@ -4,13 +4,17 @@ from tornado import httpclient
 
 class OAuthVk(web.RequestHandler):
     """Авторизация в ВК
-
+       on_success(HTTPResponse response) - если не возникло ошибок,
+            response - ответ сервера vk
+       on_error(error) - в случае возникновеня ошибок
+            error - строка с описанием, или exception
     """
-    _ACCESS_TOKEN_URL = 'https://oauth.vk.com/access_token'
+
+    _ACCESS_TOKEN_URL = 'https://oauth.vk1.com/access_token'
     _AUTHORIZE_URL = 'https://oauth.vk.com/authorize'
-    _APP_ID_ = ''
-    _REDIRECT_URL_ = ''
-    _CLIENT_SECRET_ = ''
+    _APP_ID_ = ''   # id - приложения (в настройках vk)
+    _REDIRECT_URL_ = ''  # www.yousite.com/oauth
+    _CLIENT_SECRET_ = ''  # защищенный ключ приложения (в настройках vk)
 
     def __init__(self, *args):
         super().__init__(*args)
@@ -28,17 +32,19 @@ class OAuthVk(web.RequestHandler):
         self.code_url = self._AUTHORIZE_URL + '?' + '&'.join([k + '=' + v for k, v in params.items()])
 
     async def get(self):
-
         if self.get_argument('code', default=None):
             vk_code = self.get_argument('code', default=None)
-
             if vk_code:
                 a_http = httpclient.AsyncHTTPClient()
-                response = await a_http.fetch(self.token_url+'&code='+vk_code)
-                self.on_success(response)
-
+                try:
+                    response = await a_http.fetch(self.token_url+'&code='+vk_code)
+                except Exception as e:  # в описаниии не прописаны все exception которые оно может выбросить
+                                        # как вариант сервер vk недоступен
+                    self.on_error(e)    # возвращаю exception параметром, вместо raise
+                else:
+                    self.on_success(response)
             else:
-                self.on_error()
+                self.on_error("code is None")
         else:
             self.redirect(self.code_url)
 
@@ -46,6 +52,6 @@ class OAuthVk(web.RequestHandler):
         """вызывается при удачной авторизации"""
         raise NotImplementedError("on_success")
 
-    def on_error(self):
+    def on_error(self, error):
         """при ошибке"""
         raise NotImplementedError("on_error")
