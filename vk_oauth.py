@@ -3,7 +3,9 @@ from tornado import httpclient
 
 
 class OAuthVk(web.RequestHandler):
+    """Авторизация в ВК
 
+    """
     _ACCESS_TOKEN_URL = 'https://oauth.vk.com/access_token'
     _AUTHORIZE_URL = 'https://oauth.vk.com/authorize'
     _APP_ID_ = ''

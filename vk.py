@@ -7,10 +7,10 @@ import tornado.escape as escape
 
 
 
+_METHOD_URL_ = 'https://api.vk.com/method/'
+_V = '5.62'  #не добавлено
 
-
-
-class VK_api():
+class Api():
     """https: // api.vk.com / method / METHOD_NAME?PARAMETERS & access_token = ACCESS_TOKEN & v = V
 
     METHOD_NAME (обязательно) — название метода API, к которому Вы хотите
@@ -27,26 +27,37 @@ class VK_api():
         Для сохранения совместимости в существующих приложениях по умолчанию используется версия 3.0.
     """
 
-    _BASE_URL_ = 'https://api.vk.com/method/'
 
     def __init__(self, token):
-        self.token = 'access_token=' + token
+        if not token:
+            raise ValueError("Empty token")
+        self.token = token#str(token)[2:-1]
         self._friends = None
 
-    def friends(self, user_id):
+    @property
+    def friends(self):
         if not self._friends:
-            self._friens=Friends(token)
+            self._friends = Friends(self.token)
         return self._friends
+
 
 class Friends:
     def __init__(self, token):
-        self.url = VK_api._BASE_URL_ + 'friends.'
+        self.url = _METHOD_URL_ + 'friends.'
+        self.token = token
 
-    def get(self, user_id, order = 'random', count=10, fields=('nickname','sex','domain',)):
-        url = self._BASE_URL_
-        http = httpclient.HTTPClient()
-        response = http.fetch()
-    def get
+    async def get(self, user_id=None, order='random', count=10, fields=('nickname', 'sex', 'domain',)):
+
+        if user_id:
+            url = '{}get?user_id={}&order={}&count={}&fields={}&access_token={}'.\
+                format(self.url, user_id, order, count, ';'.join(fields),self.token)
+        else:
+            url = '{}get?order={}&count={}&fields={}&access_token={}'. \
+                format(self.url, order, count, ';'.join(fields), self.token)
+        print('================\r\n\r\n{}\r\n'.format(url))
+        http = httpclient.AsyncHTTPClient()
+        return await http.fetch(url)
+
 
 
 
