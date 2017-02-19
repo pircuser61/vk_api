@@ -1,16 +1,10 @@
-import os
-
-import tornado.web as web
-import tornado.ioloop as ioloop
 import tornado.httpclient as httpclient
-import tornado.escape as escape
-
-
 
 _METHOD_URL_ = 'https://api.vk.com/method/'
-_V = '5.62'  #не добавлено
+_V = '5.62'  # не добавлено
 
-class Api():
+
+class Api:
     """https: // api.vk.com / method / METHOD_NAME?PARAMETERS & access_token = ACCESS_TOKEN & v = V
 
     METHOD_NAME (обязательно) — название метода API, к которому Вы хотите
@@ -27,11 +21,10 @@ class Api():
         Для сохранения совместимости в существующих приложениях по умолчанию используется версия 3.0.
     """
 
-
     def __init__(self, token):
         if not token:
             raise ValueError("Empty token")
-        self.token = token#str(token)[2:-1]
+        self.token = token
         self._friends = None
 
     @property
@@ -46,18 +39,30 @@ class Friends:
         self.url = _METHOD_URL_ + 'friends.'
         self.token = token
 
-    async def get(self, user_id=None, order='random', count=10, fields=('nickname', 'sex', 'domain',)):
-
+    async def get(self, user_id=None, order=None, count=None, fields=('nickname', 'sex', 'domain',)):
+        params_list = []
         if user_id:
-            url = '{}get?user_id={}&order={}&count={}&fields={}&access_token={}'.\
-                format(self.url, user_id, order, count, ';'.join(fields),self.token)
-        else:
-            url = '{}get?order={}&count={}&fields={}&access_token={}'. \
-                format(self.url, order, count, ';'.join(fields), self.token)
-        print('================\r\n\r\n{}\r\n'.format(url))
+            params_list.append('user_id=' + user_id)
+        if order:
+            params_list.append('order=' + order)
+        if count:
+            params_list.append('count=' + str(count))
+        if fields:
+            params_list.append('fields=' + ';'.join(fields))
+        params = '&'.join(params_list)
+        print(params)
+        print('\r\n')
+        url = '{}get?{}&access_token={}&v={}'\
+            .format(self.url, params, self.token, _V)
+        print(url)
         http = httpclient.AsyncHTTPClient()
         return await http.fetch(url)
 
 
+class Photos:
+    def __init__(self, token):
+        self.url = _METHOD_URL_ + 'photos.'
+        self.token = token
 
-
+    async def get_all(self):  # параметры лень
+        pass
