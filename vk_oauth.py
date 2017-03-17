@@ -26,25 +26,20 @@ class OAuthVk(web.RequestHandler):
         token_params = {'client_id': self._APP_ID_,
                         'client_secret': self._CLIENT_SECRET_,
                         'redirect_uri': self._REDIRECT_URL_,
-                        # 'code': '',
                         }
         self.token_url = self._ACCESS_TOKEN_URL + '?' + '&'.join([k + '=' + v for k, v in token_params.items()])
-        self.code_url = self._AUTHORIZE_URL + '?' + '&'.join([k + '=' + v for k, v in params.items()])
+        self.code_url = self._AUTHORIZE_URL + '?' + '&'.join([k + '=' + v for k, v in params.items()]) + '&code='
 
     async def get(self):
-        if self.get_argument('code', default=None):
-            vk_code = self.get_argument('code', default=None)
-            if vk_code:
-                a_http = httpclient.AsyncHTTPClient()
-                try:
-                    response = await a_http.fetch(self.token_url+'&code='+vk_code)
-                except Exception as e:  # в описаниии не прописаны все exception которые оно может выбросить
-                                        # как вариант сервер vk недоступен
-                    self.on_error(e)    # возвращаю exception параметром, вместо raise
-                else:
-                    self.on_success(response)
+        vk_code = self.get_argument('code', default=None)
+        if vk_code:
+            a_http = httpclient.AsyncHTTPClient()
+            try:
+                response = await a_http.fetch(self.token_url+vk_code)
+            except Exception as e:
+                self.on_error(e)
             else:
-                self.on_error("code is None")
+                self.on_success(response)
         else:
             self.redirect(self.code_url)
 
